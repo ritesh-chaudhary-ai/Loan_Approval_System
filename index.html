@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loan Approval System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0E1B2B;
+    --ink-2:#152840;
+    --paper:#EDE7D9;
+    --paper-dim:#DDD5C2;
+    --brass:#B08D57;
+    --brass-bright:#D4AF75;
+    --emerald:#2F6F4F;
+    --rust:#8C3B2E;
+    --slate:#7C8A98;
+    --line:rgba(237,231,217,0.14);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at top left, rgba(176,141,87,0.08), transparent 55%),
+      var(--ink);
+    color:var(--paper);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    padding:48px 24px 80px;
+  }
+
+  .masthead{
+    max-width:1100px;
+    margin:0 auto 40px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    border-bottom:1px solid var(--line);
+    padding-bottom:24px;
+  }
+  .masthead .brand{
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  .brand-mark{
+    width:44px;height:44px;
+    border:1.5px solid var(--brass);
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    color:var(--brass-bright);
+    font-size:20px;
+    flex-shrink:0;
+  }
+  .masthead h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(28px,4vw,38px);
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  .masthead p{
+    margin:4px 0 0;
+    color:var(--slate);
+    font-size:14px;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+  }
+  .masthead .date-stamp{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--slate);
+    text-align:right;
+    letter-spacing:0.03em;
+    line-height:1.6;
+  }
+
+  .desk{
+    max-width:1100px;
+    margin:0 auto;
+    display:grid;
+    grid-template-columns:1.3fr 1fr;
+    gap:28px;
+    align-items:start;
+  }
+  @media (max-width:860px){
+    .desk{grid-template-columns:1fr;}
+  }
+
+  /* --- Application form panel --- */
+  .form-panel{
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:6px;
+    padding:36px 38px 30px;
+    position:relative;
+    box-shadow:0 20px 60px rgba(0,0,0,0.35);
+  }
+  .form-panel::before{
+    content:"";
+    position:absolute;
+    top:0;left:0;right:0;height:5px;
+    background:linear-gradient(90deg, var(--brass), var(--emerald) 50%, var(--brass));
+    border-radius:6px 6px 0 0;
+  }
+  .form-panel h2{
+    font-family:'Fraunces', serif;
+    font-size:22px;
+    font-weight:600;
+    margin:6px 0 2px;
+  }
+  .form-panel .sub{
+    color:#5C5340;
+    font-size:13px;
+    margin:0 0 28px;
+  }
+
+  .field{
+    display:grid;
+    grid-template-columns:34px 1fr;
+    gap:14px;
+    align-items:start;
+    padding:14px 0;
+    border-bottom:1px solid rgba(14,27,43,0.1);
+  }
+  .field:last-of-type{border-bottom:none;}
+  .field .num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--brass);
+    padding-top:11px;
+    font-weight:600;
+  }
+  .field label{
+    display:block;
+    font-size:13px;
+    font-weight:500;
+    color:#4A4232;
+    margin-bottom:6px;
+    letter-spacing:0.01em;
+  }
+  .field .hint{
+    display:block;
+    font-size:11px;
+    color:#8A8168;
+    margin-top:4px;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .field input, .field select{
+    width:100%;
+    border:none;
+    border-bottom:1.5px solid rgba(14,27,43,0.25);
+    background:transparent;
+    padding:8px 2px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:15px;
+    color:var(--ink);
+    outline:none;
+    transition:border-color .15s ease;
+  }
+  .field input:focus, .field select:focus{
+    border-bottom-color:var(--emerald);
+  }
+  .field select{
+    appearance:none;
+    -webkit-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23B08D57' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right 4px center;
+    padding-right:20px;
+    cursor:pointer;
+  }
+  .field select option{
+    color:var(--ink);
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .field select:invalid{
+    color:#8A8168;
+  }
+  .field-pair{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+  }
+
+  .submit-row{
+    margin-top:26px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+  }
+  .submit-btn{
+    background:var(--ink);
+    color:var(--paper);
+    border:none;
+    padding:14px 30px;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-weight:600;
+    font-size:14px;
+    letter-spacing:0.03em;
+    border-radius:3px;
+    cursor:pointer;
+    transition:transform .12s ease, background .15s ease;
+  }
+  .submit-btn:hover{background:var(--ink-2);}
+  .submit-btn:active{transform:scale(0.98);}
+  .submit-note{
+    font-size:11.5px;
+    color:#8A8168;
+    font-family:'IBM Plex Mono', monospace;
+  }
+
+  /* --- Decision slip panel --- */
+  .slip{
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:32px 30px;
+    position:sticky;
+    top:32px;
+  }
+  .slip h3{
+    font-family:'Fraunces', serif;
+    font-size:18px;
+    font-weight:600;
+    margin:0 0 4px;
+    color:var(--paper);
+  }
+  .slip .slip-sub{
+    font-size:12px;
+    color:var(--slate);
+    margin:0 0 26px;
+    font-family:'IBM Plex Mono', monospace;
+  }
+
+  .gauge-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    margin-bottom:24px;
+  }
+  .gauge-wrap svg{width:220px;height:130px;}
+  .gauge-value{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:34px;
+    font-weight:600;
+    color:var(--brass-bright);
+    margin-top:-38px;
+  }
+  .gauge-label{
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--slate);
+    margin-top:4px;
+  }
+
+  .decision-zone{
+    border:1px dashed var(--line);
+    border-radius:5px;
+    min-height:120px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    overflow:hidden;
+    padding:20px;
+    text-align:center;
+  }
+  .decision-zone .placeholder{
+    color:var(--slate);
+    font-size:13px;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .stamp{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:26px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    padding:12px 22px;
+    border:3px solid currentColor;
+    border-radius:8px;
+    transform:rotate(-6deg) scale(0.4);
+    opacity:0;
+    animation:stampDown .38s cubic-bezier(.2,1.4,.4,1) forwards;
+  }
+  .stamp.approved{color:var(--emerald);}
+  .stamp.declined{color:var(--rust);}
+  .stamp.pending{
+    color:var(--brass-bright);
+    font-size:15px;
+    border:none;
+    letter-spacing:0.1em;
+  }
+  @keyframes stampDown{
+    0%{opacity:0; transform:rotate(-6deg) scale(0.4);}
+    60%{opacity:1; transform:rotate(-6deg) scale(1.08);}
+    100%{opacity:1; transform:rotate(-6deg) scale(1);}
+  }
+
+  .footnote{
+    margin-top:22px;
+    font-size:11px;
+    color:var(--slate);
+    font-family:'IBM Plex Mono', monospace;
+    line-height:1.6;
+    border-top:1px solid var(--line);
+    padding-top:16px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="masthead">
+    <div class="brand">
+      <div class="brand-mark">L</div>
+      <div>
+        <h1>Loan Approval System</h1>
+        
+      </div>
+    </div>
+    <div class="date-stamp" id="dateStamp"></div>
+  </div>
+
+  <div class="desk">
+
+    <!-- Application form -->
+    <div class="form-panel">
+      <h2>Applicant Particulars</h2>
+      <p class="sub">Complete every line item below, then submit for underwriting review.</p>
+
+      <form id="loanForm">
+        <div class="field">
+          <div class="num">01</div>
+          <div>
+            <label for="annual_income">Annual income</label>
+            <input type="number" id="annual_income" placeholder="e.g. 650000" required>
+            <span class="hint">in your local currency, before tax</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="num">02</div>
+          <div>
+            <label for="debt_to_income_ratio">Debt-to-income ratio</label>
+            <input type="number" step="any" id="debt_to_income_ratio" placeholder="e.g. 0.32" required>
+            <span class="hint">total monthly debt &divide; monthly income</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="num">03</div>
+          <div>
+            <label for="credit_score">Credit score</label>
+            <input type="number" id="credit_score" placeholder="300&ndash;900" min="300" max="900" required>
+            <span class="hint">updates the dial to the right</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="num">04</div>
+          <div class="field-pair">
+            <div>
+              <label for="loan_amount">Loan amount requested</label>
+              <input type="number" id="loan_amount" placeholder="e.g. 400000" required>
+            </div>
+            <div>
+              <label for="interest_rate">Interest rate (%)</label>
+              <input type="number" step="any" id="interest_rate" placeholder="e.g. 9.5" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="num">05</div>
+          <div class="field-pair">
+            <div>
+              <label for="gender">Gender</label>
+              <select id="gender" required>
+                <option value="" disabled selected>Choose one</option>
+                <option value="0">Male (0)</option>
+                <option value="1">Female (1)</option>
+              </select>
+            </div>
+            <div>
+              <label for="marital_status">Marital status</label>
+              <select id="marital_status" required>
+                <option value="" disabled selected>Choose one</option>
+                <option value="0">Single (0)</option>
+                <option value="1">Married (1)</option>
+                <option value="2">Divorced (2)</option>
+                <option value="3">Widowed (3)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="num">06</div>
+          <div class="field-pair">
+            <div>
+              <label for="education_level">Education level</label>
+              <select id="education_level" required>
+                <option value="" disabled selected>Choose one</option>
+                <option value="0">High School (0)</option>
+                <option value="1">Bachelor's Degree (1)</option>
+                <option value="2">Master's Degree (2)</option>
+                <option value="3">Doctorate / PhD (3)</option>
+              </select>
+            </div>
+            <div>
+              <label for="employment_status">Employment status</label>
+              <select id="employment_status" required>
+                <option value="" disabled selected>Choose one</option>
+                <option value="0">Unemployed (0)</option>
+                <option value="1">Employed (1)</option>
+                <option value="2">Self-Employed (2)</option>
+                <option value="3">Retired (3)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="num">07</div>
+          <div class="field-pair">
+            <div>
+              <label for="loan_purpose">Loan purpose</label>
+              <select id="loan_purpose" required>
+                <option value="" disabled selected>Choose one</option>
+                <option value="0">Debt Consolidation (0)</option>
+                <option value="1">Home / Housing (1)</option>
+                <option value="2">Education (2)</option>
+                <option value="3">Business (3)</option>
+                <option value="4">Auto / Vehicle (4)</option>
+                <option value="5">Medical (5)</option>
+                <option value="6">Personal (6)</option>
+              </select>
+            </div>
+            <div>
+              <label for="grade_subgrade">Grade / subgrade</label>
+              <select id="grade_subgrade" required>
+                <option value="" disabled selected>Choose one</option>
+                <option value="0">A &mdash; Excellent (0)</option>
+                <option value="1">B &mdash; Very Good (1)</option>
+                <option value="2">C &mdash; Good (2)</option>
+                <option value="3">D &mdash; Fair (3)</option>
+                <option value="4">E &mdash; Below Average (4)</option>
+                <option value="5">F &mdash; Poor (5)</option>
+                <option value="6">G &mdash; Very Poor (6)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="submit-row">
+          <button type="submit" class="submit-btn">Submit for review</button>
+          <span class="submit-note">POST /predict &rarr; 127.0.0.1:5000</span>
+        </div>
+      </form>
+    </div>
+
+    <!-- Decision slip -->
+    <div class="slip">
+      <h3>Decision Slip</h3>
+      <p class="slip-sub">Live read against submitted particulars</p>
+
+      <div class="gauge-wrap">
+        <svg viewBox="0 0 220 130">
+          <path d="M 15 115 A 95 95 0 0 1 205 115" fill="none" stroke="rgba(237,231,217,0.12)" stroke-width="14" stroke-linecap="round"/>
+          <path id="gaugeArc" d="M 15 115 A 95 95 0 0 1 205 115" fill="none" stroke="url(#gaugeGrad)" stroke-width="14" stroke-linecap="round"
+                stroke-dasharray="298" stroke-dashoffset="298"/>
+          <defs>
+            <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#8C3B2E"/>
+              <stop offset="55%" stop-color="#B08D57"/>
+              <stop offset="100%" stop-color="#2F6F4F"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="gauge-value" id="gaugeValue">&mdash;</div>
+        <div class="gauge-label">Credit score</div>
+      </div>
+
+      <div class="decision-zone" id="decisionZone">
+        <span class="placeholder">Awaiting submission&hellip;</span>
+      </div>
+
+      <div class="footnote" id="footnote">
+        Ledger status: idle. Fill in the form and submit to contact the underwriting model.
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  // date stamp
+  document.getElementById('dateStamp').innerText =
+    new Date().toLocaleDateString(undefined, { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  // live gauge as credit score is typed
+  const creditInput = document.getElementById('credit_score');
+  const gaugeArc = document.getElementById('gaugeArc');
+  const gaugeValue = document.getElementById('gaugeValue');
+  const ARC_LEN = 298;
+
+  function updateGauge(){
+    const val = parseFloat(creditInput.value);
+    if(isNaN(val)){
+      gaugeValue.innerText = '—';
+      gaugeArc.style.strokeDashoffset = ARC_LEN;
+      return;
+    }
+    const clamped = Math.min(900, Math.max(300, val));
+    const pct = (clamped - 300) / (900 - 300);
+    gaugeArc.style.strokeDashoffset = ARC_LEN - (ARC_LEN * pct);
+    gaugeValue.innerText = Math.round(val);
+  }
+  creditInput.addEventListener('input', updateGauge);
+
+  // form submit
+  document.getElementById('loanForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+
+    const formData = {
+      annual_income: document.getElementById('annual_income').value,
+      debt_to_income_ratio: document.getElementById('debt_to_income_ratio').value,
+      credit_score: document.getElementById('credit_score').value,
+      loan_amount: document.getElementById('loan_amount').value,
+      interest_rate: document.getElementById('interest_rate').value,
+      gender: document.getElementById('gender').value,
+      marital_status: document.getElementById('marital_status').value,
+      education_level: document.getElementById('education_level').value,
+      employment_status: document.getElementById('employment_status').value,
+      loan_purpose: document.getElementById('loan_purpose').value,
+      grade_subgrade: document.getElementById('grade_subgrade').value
+    };
+
+    const zone = document.getElementById('decisionZone');
+    const footnote = document.getElementById('footnote');
+
+    zone.innerHTML = '<span class="stamp pending">Reading file&hellip;</span>';
+    footnote.innerText = 'Ledger status: contacting underwriting model at 127.0.0.1:5000…';
+
+    try{
+      const response = await fetch('http://127.0.0.1:5000/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if(data.prediction_text){
+        const approved = data.prediction_text.toLowerCase().includes('approved');
+        zone.innerHTML = `<span class="stamp ${approved ? 'approved' : 'declined'}">${data.prediction_text}</span>`;
+        footnote.innerText = `Ledger status: response received. Verdict — ${data.prediction_text}.`;
+      } else {
+        zone.innerHTML = `<span class="stamp declined">Error</span>`;
+        footnote.innerText = 'Ledger status: model returned an error — ' + (data.error || 'unknown error') + '.';
+      }
+    } catch(err){
+      zone.innerHTML = `<span class="stamp declined">No Connection</span>`;
+      footnote.innerText = "Ledger status: could not reach the server. Is app.py running on port 5000?";
+    }
+  });
+</script>
+<p><h1>❤️created by Ritesh Chaudhary</h1></p>
+</body>
+</html>
